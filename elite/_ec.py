@@ -58,8 +58,7 @@ class _EC(
     def __repr__(self) -> str:
         if self.connect_state:
             return "Elite EC6%s, IP:%s, Name:%s" % (
-                self.robot_type.va                        servo_on_tries += 1
-lue,
+                self.robot_type.value,
                 self.robot_ip,
                 self.robot_name,
             )
@@ -91,75 +90,55 @@ lue,
         """Automatically servo on, successful in the vast majority of cases"""
         # Handle pass-through state
         if self.TT_state:
-            self.logger.debug(
-                "TT state is enabled, automatically clearing TT cache"
-            )
+            self.logger.debug("TT state is enabled, automatically clearing TT cache")
             time.sleep(0.5)
             if self.TT_clear_buff():
                 self.logger.debug("TT cache cleared")
 
-        state_str = [
-            "Please set Robot Mode to remote",
-            "Alarm clear failed",
-            "MotorStatus sync failed",
-            "Servo status set failed",
-        ]
-        state = 0
-        robot_mode = self.mode
-        if robot_mode == BaseEC.RobotMode.REMOTE:
-            state = 1
-            # Clear alarmstate
-            clear_num = 0
-            # Loop to clear alarm, excluding abnormal conditions
-            clear_alarm_tries = 0
-            while clear_alarm_tries < max_retries:
-                clear_alarm_tries += 1
-                self.clear_alarm()
-                time.sleep(0.2)
-                if self.state.value == 0:
-                    state = 2
-                    break
-                clear_num += 1
-                if clear_num > 4:
-                    self.logger.error(
-                        "Alarm cannot be cleared, please check robot state"
-                    )
-                    return False
-            self.logger.debug("Alarm cleared successfully")
-            time.sleep(0.2)
-            # Encoder synchronization
-            if state == 2 and not self.sync_status:
-                if self.sync():
-                    state = 3
-                    self.logger.debug("MotorStatus synchronized successfully")
-                    time.sleep(0.2)
-                    # Loop to servo on
-                    servo_on_tries = 0
-                    while servo_on_tries < max_retries:
-                        servo_on_tries += 1
-                        self.set_servo_status()
-                        if self.servo_status:
-                            self.logger.debug("Servo status set successfully")
-                            return True
-                        time.sleep(0.02)
-            else:
-                state = 3
-                self.logger.debug("MotorStatus synchronized successfully")
-                time.sleep(0.2)
-                # Servo on
-                if self.set_servo_status():
-                    # Loop to servo on
-                    servo_on_tries = 0
-                    while servo_on_tries < max_retries:
-                        servo_on_tries += 1
-                        self.set_servo_status()
-                        if self.servo_status:
-                            self.logger.debug("Servo status set successfully")
-                            return True
-                        time.sleep(0.02)
+        if self.mode != BaseEC.RobotMode.REMOTE:
+            self.logger.error("Please set Robot Mode to remote")
+            return False
 
-        self.logger.error(state_str[state])
-        return False
+        # Loop to clear alarm, excluding abnormal conditions
+        clear_alarm_tries = 0
+        while clear_alarm_tries < max_retries and self.state != BaseEC.RobotState.STOP:
+            clear_alarm_tries += 1
+            self.clear_alarm()
+            time.sleep(0.2)
+
+        if self.state != BaseEC.RobotState.STOP:
+            self.logger.error("Alarm cannot be cleared, please check robot state")
+            return False
+
+        self.logger.debug("Alarm cleared successfully")
+        time.sleep(0.2)
+
+        motor_status_tries = 0
+        while motor_status_tries < max_retries and not self.sync_status:
+            motor_status_tries += 1
+            self.sync()
+            time.sleep(2)
+
+        if not self.sync_status:
+            self.logger.error("MotorStatus sync failed")
+            return False
+
+        self.logger.debug("MotorStatus synchronized successfully")
+        time.sleep(0.2)
+
+        # Loop to servo on
+        servo_on_tries = 0
+        while servo_on_tries < max_retries and not self.servo_status:
+            servo_on_tries += 1
+            self.set_servo_status()
+            time.sleep(0.02)
+
+        if not self.servo_status:
+            self.logger.error("Servo status set failed")
+            return False
+
+        self.logger.debug("Servo status set successfully")
+        return True
 
     def monitor_thread_run(self):
         """Run 8056 data monitoring thread
