@@ -3,7 +3,7 @@ Author: Elite_zhangjunjie
 CreateDate:
 LastEditors: Elite_zhangjunjie
 LastEditTime: 2022-05-22 16:34:53
-Description: 伺服相关类
+Description: Servo-related class
 """
 
 import time
@@ -13,16 +13,16 @@ from elite._baseec import BaseEC
 
 
 class ECServo(BaseEC):
-    """EC伺服相关类,伺服类即与机器人本身的一些运动状态、模式、上下伺服等操作相关"""
+    """EC servo-related class, servo class is related to the robot's motion state, mode, servo on/off operations, etc."""
 
-    #  伺服服务
+    # Servo service
     @property
     def mode(self) -> BaseEC.RobotMode:
-        """获取机器人的模式
+        """Get the robot's mode
 
         Returns
         -------
-            RobotMode: 0示教,1运行,2远程
+            RobotMode: 0 Teach, 1 Run, 2 Remote
 
         Examples
         --------
@@ -34,12 +34,12 @@ class ECServo(BaseEC):
 
     @property
     def state(self) -> BaseEC.RobotState:
-        """获取机器人运行状态
-            #!本指令获取的急停状态只会短暂存在,很快会被报警覆盖,如果需要获取急停状态,请使用robot_get_estop_status()
+        """Get the robot's running state
+            #!The emergency stop state obtained by this command will only exist briefly and will soon be overwritten by alarms. If you need to get the emergency stop status, please use robot_get_estop_status()
 
         Returns
         -------
-            RobotState: 0停止,1暂停,2急停,3运行,4错误,5碰撞
+            RobotState: 0 Stop, 1 Pause, 2 Emergency stop, 3 Run, 4 Error, 5 Collision
 
         Examples
         --------
@@ -51,70 +51,70 @@ class ECServo(BaseEC):
 
     @property
     def estop_status(self) -> int:
-        """获取机器人的紧急停止状态(硬件的状态)
+        """Get the robot's emergency stop status (hardware status)
 
         Returns
         -------
-            int: 0:非急停,1: 急停
+            int: 0: Not emergency stop, 1: Emergency stop
         """
         return self.send_CMD("get_estop_status")
 
     @property
     def servo_status(self) -> bool:
-        """获取伺服状态
+        """Get servo status
 
         Returns
         -------
-            bool: True启用,False未启用
+            bool: True Enabled, False Disabled
         """
         return self.send_CMD("getServoStatus")
 
     def set_servo_status(self, _status: int = 1) -> bool:
-        """设置机器人伺服状态
+        """Set robot servo status
 
         Args
         ----
-            status (int, optional): 1上伺服,0下伺服. Defaults to 1.
+            status (int, optional): 1 Servo on, 0 Servo off. Defaults to 1.
 
         Returns
         -------
-            bool: True操作成功,False操作失败
+            bool: True Operation successful, False Operation failed
         """
         return self.send_CMD("set_servo_status", {"status": _status})
 
     def sync(self) -> bool:
-        """编码器同步
+        """Encoder synchronization
 
         Returns
         -------
-            bool: True操作成功,False操作失败
+            bool: True Operation successful, False Operation failed
         """
         return self.send_CMD("syncMotorStatus")
 
     @property
     def sync_status(self) -> bool:
-        """获取同步状态
+        """Get synchronization status
 
         Returns
         -------
-            bool: True同步,False未同步
+            bool: True Synchronized, False Not synchronized
         """
         return self.send_CMD("getMotorStatus")
 
     def clear_alarm(self) -> bool:
-        """清除报警
+        """Clear alarm
 
         Returns
         -------
-            bool: True操作成功,False操作失败
+            bool: True Operation successful, False Operation failed
         """
         return self.send_CMD("clearAlarm")
 
     def calibrate_encoder_zero(self) -> bool:
-        """编码器零位校准,如果可以校准则返回True并不在乎校准结果,如果不可以校准,返回False,
+        """Encoder zero calibration, returns True if calibration is possible regardless of calibration result, returns False if calibration is not possible
 
         Returns
         -------
-            bool: 可以校准 True,无法校准 False
+            bool: Can calibrate True, Cannot calibrate False
         """
         return self.send_CMD("calibrate_encoder_zero_position")
