@@ -1,22 +1,29 @@
-'''
+"""
 Author: Elite_zhangjunjie
-CreateDate: 
+CreateDate:
 LastEditors: Elite_zhangjunjie
 LastEditTime: 2022-05-22 14:24:45
-Description: 
-'''
+Description:
+"""
 
 from ._baseec import BaseEC
 
 
 class ECMoveML(BaseEC):
-    """ECMoveML类,实现时间戳服务(movml)相关的接口
-    """
+    """ECMoveML类,实现时间戳服务(movml)相关的接口"""
+
     # moveml运动
-    def ml_init(self, length: int, point_type: int, ref_joint: list, ref_frame: list, ret_flag: int) -> bool:
+    def ml_init(
+        self,
+        length: int,
+        point_type: int,
+        ref_joint: list,
+        ref_frame: list,
+        ret_flag: int,
+    ) -> bool:
         """初始化带时间戳轨迹文件运动
            #!传输的第一个点位的时间戳必须为0
-           
+
         Args
         ----
             length (int): 点位数量
@@ -30,9 +37,17 @@ class ECMoveML(BaseEC):
             bool: True操作成功,False操作失败
         """
         self.ml_ret_flag = ret_flag
-        return self.send_CMD("start_push_pos",{"path_lenth":length, "pos_type":point_type, "ref_joint_pos":ref_joint, "ref_frame":ref_frame, "ret_flag":ret_flag})
-    
-    
+        return self.send_CMD(
+            "start_push_pos",
+            {
+                "path_lenth": length,
+                "pos_type": point_type,
+                "ref_joint_pos": ref_joint,
+                "ref_frame": ref_frame,
+                "ret_flag": ret_flag,
+            },
+        )
+
     def ml_push(self, time_stamp: float, pos: list) -> bool:
         """添加带时间戳文件运动点位
 
@@ -45,9 +60,10 @@ class ECMoveML(BaseEC):
         -------
             bool: True操作成功,False操作失败
         """
-        return self.send_CMD("push_pos", {"timestamp":time_stamp, "pos":pos}, ret_flag=self.ml_ret_flag)
+        return self.send_CMD(
+            "push_pos", {"timestamp": time_stamp, "pos": pos}, ret_flag=self.ml_ret_flag
+        )
 
-    
     def ml_end_push(self) -> bool:
         """停止添加时间戳点位,并返回push结果,push结果正确返回True
 
@@ -56,8 +72,7 @@ class ECMoveML(BaseEC):
             bool: True操作成功,False操作失败
         """
         return self.send_CMD("stop_push_pos")
-    
-    
+
     def ml_check_push_result(self) -> BaseEC.MlPushResult:
         """检查push结果
 
@@ -66,8 +81,7 @@ class ECMoveML(BaseEC):
             MlPushResult: 0:push点位和时间戳正确,-1:点位长度不符,-2:点位格式错误,-3:时间戳不规范
         """
         return self.MlPushResult(self.send_CMD("check_trajectory"))
-    
-    
+
     def ml_flush(self) -> bool:
         """清空缓存
 
@@ -76,9 +90,8 @@ class ECMoveML(BaseEC):
             bool: True操作成功,False操作失败
         """
         return self.send_CMD("flush_trajectory")
-     
-    
-    def ml_run(self, speed_percent: float=0.1) -> bool:
+
+    def ml_run(self, speed_percent: float = 0.1) -> bool:
         """开始运行带时间戳的轨迹文件
 
         Args
@@ -89,9 +102,8 @@ class ECMoveML(BaseEC):
         -------
             bool: True操作成功,False操作失败
         """
-        return self.send_CMD("start_trajectory",{"speed_percent":speed_percent})
-    
-    
+        return self.send_CMD("start_trajectory", {"speed_percent": speed_percent})
+
     def ml_pause(self) -> bool:
         """暂停运行带时间戳的轨迹文件
 
@@ -100,8 +112,7 @@ class ECMoveML(BaseEC):
             bool: True操作成功,False操作失败
         """
         return self.send_CMD("pause_trajectory")
-    
-    
+
     def ml_stop(self) -> bool:
         """停止运行带时间戳的轨迹运动
 
@@ -110,8 +121,7 @@ class ECMoveML(BaseEC):
             bool: True操作成功,False操作失败
         """
         return self.send_CMD("stop_trajectory")
-        
-        
+
     def ml_resume(self) -> bool:
         """恢复运行带时间戳的轨迹文件
 

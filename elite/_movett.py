@@ -1,20 +1,28 @@
-'''
+"""
 Author: Elite_zhangjunjie
-CreateDate: 
+CreateDate:
 LastEditors: Elite_zhangjunjie
 LastEditTime: 2022-05-21 17:14:43
-Description: 
-'''
+Description:
+"""
+
 import time
 
 from ._baseec import BaseEC
 from typing import List, Optional
 
+
 class ECMoveTT(BaseEC):
-    """EC透传服务类,该类实现所有的透传相关接口
-    """
+    """EC透传服务类,该类实现所有的透传相关接口"""
+
     # 透传运动部分
-    def TT_init(self, t: int = 10, lookahead: int = 400, smoothness: float = 0.1, response_enable: Optional[int] = None) -> bool:
+    def TT_init(
+        self,
+        t: int = 10,
+        lookahead: int = 400,
+        smoothness: float = 0.1,
+        response_enable: Optional[int] = None,
+    ) -> bool:
         """透传模式初始化
 
         Args
@@ -39,10 +47,20 @@ class ECMoveTT(BaseEC):
         self.TT_ret_flag = 1
         if response_enable is not None:
             self.TT_ret_flag = response_enable
-            return self.send_CMD("transparent_transmission_init",{"lookahead":lookahead,"t":t,"smoothness":smoothness,"response_enable":response_enable})
+            return self.send_CMD(
+                "transparent_transmission_init",
+                {
+                    "lookahead": lookahead,
+                    "t": t,
+                    "smoothness": smoothness,
+                    "response_enable": response_enable,
+                },
+            )
         else:
-            return self.send_CMD("transparent_transmission_init",{"lookahead":lookahead,"t":t,"smoothness":smoothness})
-
+            return self.send_CMD(
+                "transparent_transmission_init",
+                {"lookahead": lookahead, "t": t, "smoothness": smoothness},
+            )
 
     def TT_start_joint(self, joint: List[float]) -> bool:
         """旧接口,设置透传数据,旧接口有时候会丢失数据
@@ -51,13 +69,16 @@ class ECMoveTT(BaseEC):
         Args
         ----
             joint (List[float]): 关节数据
-            
+
         Returns
         -------
             bool: True操作成功,False操作失败
         """
-        return self.send_CMD("tt_set_current_servo_joint", {"targetPos":joint}, ret_flag = self.TT_ret_flag)
-
+        return self.send_CMD(
+            "tt_set_current_servo_joint",
+            {"targetPos": joint},
+            ret_flag=self.TT_ret_flag,
+        )
 
     def TT_add_joint(self, joint: List[float]) -> bool:
         """透传添加目标关节点到缓存
@@ -65,13 +86,14 @@ class ECMoveTT(BaseEC):
         Args
         ----
             joint (List[float]): 目标关节点
-            
+
         Returns
         -------
             bool: True操作成功,False操作失败
         """
-        return self.send_CMD("tt_put_servo_joint_to_buf", {"targetPos":joint}, ret_flag = self.TT_ret_flag)
-
+        return self.send_CMD(
+            "tt_put_servo_joint_to_buf", {"targetPos": joint}, ret_flag=self.TT_ret_flag
+        )
 
     def TT_add_pose(self, pose: List[float]) -> bool:
         """透传添加目标位姿点到缓存
@@ -79,13 +101,14 @@ class ECMoveTT(BaseEC):
         Args
         ----
             pose (List[float]): 目标位姿点
-            
+
         Returns
         -------
             bool: True操作成功,False操作失败
         """
-        return self.send_CMD("tt_put_servo_joint_to_buf",{"targetPose":pose}, ret_flag = self.TT_ret_flag)
-
+        return self.send_CMD(
+            "tt_put_servo_joint_to_buf", {"targetPose": pose}, ret_flag=self.TT_ret_flag
+        )
 
     def TT_clear_buff(self) -> bool:
         """清空透传缓存
@@ -94,8 +117,7 @@ class ECMoveTT(BaseEC):
         -------
             bool: True操作成功,False操作失败
         """
-        return self.send_CMD("tt_clear_servo_joint_buf",{"clear":0})
-
+        return self.send_CMD("tt_clear_servo_joint_buf", {"clear": 0})
 
     @property
     def TT_state(self) -> int:
@@ -103,6 +125,6 @@ class ECMoveTT(BaseEC):
 
         Returns
         -------
-            int: 0: 非透传状态 1: 透传状态 
+            int: 0: 非透传状态 1: 透传状态
         """
         return self.send_CMD("get_transparent_transmission_state")
