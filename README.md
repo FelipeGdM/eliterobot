@@ -1,17 +1,12 @@
----
-
 # Elite SDK For Python
 
-> ### 明天比今天更简单一点
->
-> ### Always Easier Then Before
+> Always Easier Than Before
 
+Elirobot is a Python library that provides an SDK wrapper for Elite Robots' EC series robots. It is ready to use right out of the box, making it extremely convenient for users.
 
-elirobot是一个Python库,包含了艾利特机器人的EC系列机器人的SDK封装，用户即开即用，非常方便
+## Overview
 
-# Overview
-
-## Installation
+### Installation
 
 ```bash
 pip install elirobots
@@ -19,55 +14,43 @@ pip install elirobots
 pip3 install elirobots
 ```
 
-## Docs
+### Documentation
 
-[elirobots docs](https://eliterobot.readthedocs.io/zh_CN/latest/)
+[Elirobot Documentation](https://eliterobot.readthedocs.io/zh_CN/latest/)
 
-## Features
+### Features
 
-- 从复杂的底层通讯建立到开箱即用，只需要一条命令和几行代码
-- 面向对象设计，从而可以更轻松的控制多台机器人
-- 完善的日志输出，可以更轻松的debug
-- 将机器人的固有信息作为类的属性使用
-- 更简洁的接口设计，使您可以更快速的编写逻辑代码
-- 数据监控端口，也只是两行代码就可以看到所有的监控信息
+- From complex low-level communication setup to out-of-the-box usability, requiring just one command and a few lines of code.
+- Object-oriented design, enabling easier control of multiple robots.
+- Comprehensive log output for easier debugging.
+- Incorporates the robot's inherent information as class attributes.
+- Streamlined interface design for faster logic coding.
+- Data monitoring port—just two lines of code to view all monitoring information.
 
-# ChangeLog
+## Changelog
 
-## 20220730
+### 2022-07-30
 
-- movj和movl接口默认阻塞执行
-- 添加发送和接受消息的flag，便于用户查看实际进行通讯的报文内容
-- 添加圆弧移动指令
-- 
+- `movj` and `movl` interfaces now block execution by default.
+- Added send and receive message flags for users to easily view actual communication packets.
+- Added arc movement command.
 
-## 20220518
+### 2022-05-18
 
-- 规范var接口
-- 文档持续更新中
+- Standardized the `var` interface.
+- Documentation continuously updated.
 
-## 20220513
+### 2022-05-13
 
-- 发布v0.0.1
-- 文档持续更新中
+- Released v0.0.1.
+- Documentation continuously updated.
 
+## Feedback
 
+If you discover any issues, please feel free to contact us!!!
 
-# Feedback
+If you find any errors, you can reach us via GitHub!!!
 
-如果你发现了任何错误，请联系我们！！！
+GitHub: `https://github.com/JunJie-zhang-o/eliterobot.git`
 
-If you find any errors, you can contact us by Github！！！
-
-github:
-
-```
-https://github.com/JunJie-zhang-o/eliterobot.git
-```
-
-email:
-
-```
-tech@elibot.cn
-```
-
+Email: `tech@elibot.cn`
