@@ -3,14 +3,15 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "elirobots"
-version = "0.0.7"
+name = "elirobots_fgmd"
+version = "0.0.1"
 description = "a SDK library for Elite EC Series Robot"
 readme = "README.md"
 requires-python = ">3.5"
 keywords = ["elite", "elibot", "eliterobot", "robot", "Robot", "robotSDK"]
 authors = [
-    {name = "Elite", email = "zhangjunjie@elibot.cn"}
+    {name = "Elite", email = "zhangjunjie@elibot.cn"},
+    {name = "Felipe Gomes de Melo", email = "felipegmelo@usp.br"}
 ]
 urls = {Homepage = "https://github.com/JunJie-zhang-o/eliterobot.git"}
 dependencies = [
