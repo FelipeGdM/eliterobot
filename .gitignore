@@ -9,3 +9,5 @@ elirobots.egg-info
 *.log
 
 main.py
+
+*.egg-info
