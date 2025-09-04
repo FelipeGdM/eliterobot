@@ -11,10 +11,12 @@ import socket
 import sys
 import threading
 import time
-from enum import Enum
+from enum import IntEnum
 from typing import Optional
 
 from loguru._logger import Core, Logger
+
+from elite.types import CmdResponse
 
 
 class BaseEC:
@@ -140,7 +142,7 @@ class BaseEC:
 
     def send_CMD(
         self, cmd: str, params: Optional[dict] = None, id: int = 1, ret_flag: bool = True
-    ) -> tuple[bool, str | None, str | None]:
+    ) -> CmdResponse:
         """Send specified command to port 8055
 
         Args
@@ -157,7 +159,7 @@ class BaseEC:
 
         if self.sock_cmd is None:
             self.logger.error("Socket invalid, connection is broken")
-            return (False, None, None)
+            return CmdResponse(False, "", "")
 
         parsed_params = params if params else {}
         sendStr = json.dumps({"jsonrpc": "2.0", "method": cmd, "params": parsed_params, "id": id})
@@ -171,7 +173,7 @@ class BaseEC:
                 self.sock_cmd.sendall(bytes(sendStr, "utf-8"))
 
                 if not ret_flag:
-                    return (True, None, None)
+                    return CmdResponse(True, "", "")
 
                 ret = self.sock_cmd.recv(1024)
                 jdata = json.loads(str(ret, "utf-8"))
@@ -185,21 +187,21 @@ class BaseEC:
                         self.logger.warning(
                             "id match fail,send_id={0},recv_id={0}", id, jdata["id"]
                         )
-                    return (True, json.loads(jdata["result"]), jdata["id"])
+                    return CmdResponse(True, json.loads(jdata["result"]), jdata["id"])
 
                 if "error" in jdata:
                     self.logger.warning(f"CMD: {cmd} | {jdata['error']['message']}")
-                    return (False, jdata["error"]["message"], jdata["id"])
+                    return CmdResponse(False, jdata["error"]["message"], jdata["id"])
 
                 self.logger.error("Received package didn't match any known structure")
-                return (False, None, None)
+                return CmdResponse(False, "", "")
 
         except Exception as e:
             self.logger.error(f"CMD: {cmd} |Exception: {e}")
             quit()
             return (False, None, None)
 
-    class Frame(Enum):
+    class Frame(IntEnum):
         """Coordinate system (used for specifying coordinate system during jogging, etc.)"""
 
         JOINT_FRAME = 0  # Joint coordinate system
@@ -208,7 +210,7 @@ class BaseEC:
         USER_FRAME = 3  # User coordinate system
         CYLINDER_FRAME = 4  # Cylindrical coordinate system
 
-    class ToolNumber(Enum):
+    class ToolNumber(IntEnum):
         """Tool coordinate system (used for setting/viewing tool coordinate system data)"""
 
         TOOL0 = 0  # Tool 0
@@ -220,7 +222,7 @@ class BaseEC:
         TOOL6 = 6  # Tool 6
         TOOL7 = 7  # Tool 7
 
-    class UserFrameNumber(Enum):
+    class UserFrameNumber(IntEnum):
         """User coordinate system (used for setting/viewing user coordinate system data)"""
 
         USER0 = 0  # User 0
@@ -232,40 +234,40 @@ class BaseEC:
         USER6 = 6  # User 6
         USER7 = 7  # User 7
 
-    class AngleType(Enum):
+    class AngleType(IntEnum):
         """Pose unit (used for setting/returning pose data units)"""
 
         DEG = 0  # Degrees
         RAD = 1  # Radians
 
-    class CycleMode(Enum):
+    class CycleMode(IntEnum):
         """Cycle mode (used for querying/setting current cycle mode)"""
 
         STEP = 0  # Single step
         CYCLE = 1  # Single cycle
         CONTINUOUS_CYCLE = 2  # Continuous cycle
 
-    class RobotType(Enum):
+    class RobotType(IntEnum):
         """Robot subtype"""
 
         EC63 = 3  # EC63
         EC66 = 6  # EC66
         EC612 = 12  # EC612
 
-    class ToolBtn(Enum):
+    class ToolBtn(IntEnum):
         """End-effector button"""
 
         BLUE_BTN = 0  # End blue button
         GREEN_BTN = 1  # End green button
 
-    class ToolBtnFunc(Enum):
+    class ToolBtnFunc(IntEnum):
         """End-effector button function"""
 
         DISABLED = 0  # Disabled
         DRAG = 1  # Drag
         RECORD_POINT = 2  # Drag recording point
 
-    class JbiRunState(Enum):
+    class JbiRunState(IntEnum):
         """JBI run state"""
 
         STOP = 0  # JBI run stopped
@@ -276,7 +278,7 @@ class BaseEC:
         DEC_TO_STOP = 5  # JBI decelerating to stop
         DEC_TO_PAUSE = 6  # JBI decelerating to pause
 
-    class MlPushResult(Enum):
+    class MlPushResult(IntEnum):
         """ML point push result"""
 
         CORRECT = 0  # Correct
@@ -284,14 +286,14 @@ class BaseEC:
         WRONG_FORMAT = -2  # Format error
         TIMESTAMP_IS_NOT_STANDARD = -3  # Timestamp not standard
 
-    class RobotMode(Enum):
+    class RobotMode(IntEnum):
         """Robot mode"""
 
         TECH = 0  # Teach mode
         PLAY = 1  # Run mode
         REMOTE = 2  # Remote mode
 
-    class RobotState(Enum):
+    class RobotState(IntEnum):
         """Robot state"""
 
         STOP = 0  # Stopped
