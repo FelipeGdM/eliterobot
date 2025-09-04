@@ -9,6 +9,8 @@ Description: Motion and task execution related
 import time
 from typing import Optional
 
+from elite.types import CmdResponse
+
 from ._baseec import BaseEC
 
 
@@ -18,7 +20,7 @@ class ECMove(BaseEC):
     def __wait_stop(self) -> None:
         while True:
             time.sleep(0.005)
-            result = self.RobotState(self.send_CMD("getRobotState"))
+            result = self.RobotState(self.send_CMD("getRobotState").result)
             if result != self.RobotState.PLAY:
                 if result != self.RobotState.STOP:
                     str_ = [
@@ -34,7 +36,7 @@ class ECMove(BaseEC):
                 break
         self.logger.info("The robot has stopped")
 
-    def stop(self) -> bool:
+    def stop(self) -> CmdResponse:
         """Stop robot movement
 
         Returns
@@ -43,7 +45,7 @@ class ECMove(BaseEC):
         """
         return self.send_CMD("stop")
 
-    def run(self) -> bool:
+    def run(self) -> CmdResponse:
         """Resume robot automatic operation (used after pause)
 
         Returns
@@ -52,7 +54,7 @@ class ECMove(BaseEC):
         """
         return self.send_CMD("run")
 
-    def pause(self) -> bool:
+    def pause(self) -> CmdResponse:
         """Pause robot
 
         Returns
@@ -62,7 +64,7 @@ class ECMove(BaseEC):
         return self.send_CMD("pause")
 
     # JBI file processing
-    def check_if_jbi_exists(self, file_name: str) -> int:
+    def check_if_jbi_exists(self, file_name: str) -> CmdResponse:
         """Check if JBI file exists
 
         Args
@@ -75,7 +77,7 @@ class ECMove(BaseEC):
         """
         return self.send_CMD("checkJbiExist", {"filename": file_name})
 
-    def run_jbi(self, file_name: str) -> bool:
+    def run_jbi(self, file_name: str) -> CmdResponse:
         """Run JBI file
 
         Args
@@ -100,11 +102,11 @@ class ECMove(BaseEC):
             JbiRunState: 0 stopped, 1 paused, 2 emergency stopped, 3 running, 4 error
         """
         return self.JbiRunState(
-            self.send_CMD("getJbiState", {"filename": file_name})["runState"]
+            self.send_CMD("getJbiState", {"filename": file_name}).result["runState"]
         )
 
     # Jog motion
-    def jog(self, index: int, speed: Optional[float] = None) -> bool:
+    def jog(self, index: int, speed: Optional[float] = None) -> CmdResponse:
         """Jog motion:
                 The robot will not stop immediately after stopping the jog command, need to use stop command to stop
                 If no next jog command is received for more than 1s, reception stops and robot jog motion stops
@@ -133,7 +135,7 @@ class ECMove(BaseEC):
         cond_value: Optional[int] = None,
         cond_judgement: Optional[str] = None,
         block: Optional[bool] = True,
-    ) -> bool:
+    ) -> CmdResponse:
         """Joint motion, need to check robot motion status to determine if motion is complete after execution
 
         Args
@@ -166,7 +168,7 @@ class ECMove(BaseEC):
             params["cond_judgement"] = cond_judgement
         if block:
             move_ret = self.send_CMD("moveByJoint", params)
-            if move_ret:
+            if move_ret.success:
                 self.__wait_stop()
             return move_ret
         else:
@@ -184,7 +186,7 @@ class ECMove(BaseEC):
         cond_value: Optional[int] = None,
         cond_judgment: Optional[str] = None,
         block: Optional[bool] = True,
-    ) -> bool:
+    ) -> CmdResponse:
         """Linear motion, need to check robot motion status to determine if motion is complete after execution
 
         Args
@@ -220,7 +222,7 @@ class ECMove(BaseEC):
             params["cond_judgment"] = cond_judgment
         if block:
             move_ret = self.send_CMD("moveByLine", params)
-            if move_ret:
+            if move_ret.success:
                 self.__wait_stop()
             return move_ret
         else:
@@ -238,7 +240,7 @@ class ECMove(BaseEC):
         cond_num: Optional[int] = None,
         cond_value: Optional[int] = None,
         block: Optional[bool] = True,
-    ) -> bool:
+    ) -> CmdResponse:
         """Arc motion, need to check robot motion status to determine if motion is complete after execution
 
         Args
@@ -273,13 +275,13 @@ class ECMove(BaseEC):
         print(params)
         if block:
             move_ret = self.send_CMD("moveByArc", params)
-            if move_ret:
+            if move_ret.success:
                 self.__wait_stop()
             return move_ret
         else:
             return self.send_CMD("moveByArc", params)
 
-    def move_speed_j(self, vj: list, acc: float, t: float) -> bool:
+    def move_speed_j(self, vj: list, acc: float, t: float) -> CmdResponse:
         """Joint uniform motion
 
         Args
@@ -294,7 +296,7 @@ class ECMove(BaseEC):
         """
         return self.send_CMD("moveBySpeedj", {"vj": vj, "acc": acc, "t": t})
 
-    def move_stop_speed_j(self, stop_acc: int) -> bool:
+    def move_stop_speed_j(self, stop_acc: int) -> CmdResponse:
         """Stop joint uniform motion
 
         Args
@@ -309,7 +311,7 @@ class ECMove(BaseEC):
 
     def move_speed_l(
         self, v: list, acc: float, t: float, arot: Optional[float] = None
-    ) -> bool:
+    ) -> CmdResponse:
         """Linear uniform motion
 
         Args
@@ -328,7 +330,7 @@ class ECMove(BaseEC):
             params["arot"] = arot
         return self.send_CMD("moveBySpeedl", params)
 
-    def move_stop_speed_l(self, stop_acc: int) -> bool:
+    def move_stop_speed_l(self, stop_acc: int) -> CmdResponse:
         """Stop linear uniform motion
 
         Args
@@ -392,7 +394,7 @@ class ECMove(BaseEC):
         return self.send_CMD("moveByLineCoord", params)
 
     # Waypoint operation section
-    def clear_path_point(self) -> bool:
+    def clear_path_point(self) -> CmdResponse:
         """Clear waypoint information 2.0
 
         Returns
@@ -401,7 +403,7 @@ class ECMove(BaseEC):
         """
         return self.send_CMD("clearPathPoint")
 
-    def move_by_path(self) -> int:
+    def move_by_path(self) -> CmdResponse:
         """Waypoint motion
 
         Returns
@@ -417,14 +419,14 @@ class ECMove(BaseEC):
         speed: float,
         acc: int = 20,
         dec: int = 20,
-        smooth: int = None,
-        circular_radius: int = None,
+        smooth: Optional[int] = None,
+        circular_radius: Optional[int] = None,
         speed_type: Optional[int] = None,
         cond_type: Optional[int] = None,
         cond_num: Optional[int] = None,
         cond_value: Optional[int] = None,
         cond_judgment: Optional[str] = None,
-    ) -> bool:
+    ) -> CmdResponse:
         """Add waypoint information
            #!If motion type is joint motion, speed_type is invalid, not recommended
 
@@ -470,7 +472,7 @@ class ECMove(BaseEC):
 
         return self.send_CMD("addPathPoint", params)
 
-    def get_running_path_index(self) -> int:
+    def get_running_path_index(self) -> CmdResponse:
         """Get current running waypoint index
 
         Returns

@@ -10,6 +10,7 @@ import time
 from enum import Enum
 
 from elite._baseec import BaseEC
+from elite.types import CmdResponse
 
 
 class ECServo(BaseEC):
@@ -35,7 +36,9 @@ class ECServo(BaseEC):
     @property
     def state(self) -> BaseEC.RobotState:
         """Get the robot's running state
-            #!The emergency stop state obtained by this command will only exist briefly and will soon be overwritten by alarms. If you need to get the emergency stop status, please use robot_get_estop_status()
+            #!The emergency stop state obtained by this command will only exist briefly and
+            # will soon be overwritten by alarms. If you need to get the emergency stop status,
+            # please use robot_get_estop_status()
 
         Returns
         -------
@@ -50,7 +53,7 @@ class ECServo(BaseEC):
         return self.RobotState(self.send_CMD("getRobotState"))
 
     @property
-    def estop_status(self) -> int:
+    def estop_status(self) -> CmdResponse:
         """Get the robot's emergency stop status (hardware status)
 
         Returns
@@ -60,7 +63,7 @@ class ECServo(BaseEC):
         return self.send_CMD("get_estop_status")
 
     @property
-    def servo_status(self) -> bool:
+    def servo_status(self) -> CmdResponse:
         """Get servo status
 
         Returns
@@ -69,7 +72,7 @@ class ECServo(BaseEC):
         """
         return self.send_CMD("getServoStatus")
 
-    def set_servo_status(self, _status: int = 1) -> bool:
+    def set_servo_status(self, _status: int = 1) -> CmdResponse:
         """Set robot servo status
 
         Args
@@ -82,7 +85,7 @@ class ECServo(BaseEC):
         """
         return self.send_CMD("set_servo_status", {"status": _status})
 
-    def sync(self) -> bool:
+    def sync(self) -> CmdResponse:
         """Encoder synchronization
 
         Returns
@@ -92,7 +95,7 @@ class ECServo(BaseEC):
         return self.send_CMD("syncMotorStatus")
 
     @property
-    def sync_status(self) -> bool:
+    def sync_status(self) -> CmdResponse:
         """Get synchronization status
 
         Returns
@@ -101,7 +104,7 @@ class ECServo(BaseEC):
         """
         return self.send_CMD("getMotorStatus")
 
-    def clear_alarm(self) -> bool:
+    def clear_alarm(self) -> CmdResponse:
         """Clear alarm
 
         Returns
@@ -110,7 +113,7 @@ class ECServo(BaseEC):
         """
         return self.send_CMD("clearAlarm")
 
-    def calibrate_encoder_zero(self) -> bool:
+    def calibrate_encoder_zero(self) -> CmdResponse:
         """Encoder zero calibration, returns True if calibration is possible regardless of calibration result, returns False if calibration is not possible
 
         Returns
