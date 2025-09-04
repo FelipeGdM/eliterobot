@@ -25,8 +25,7 @@ class BaseEC:
     # logger.remove(0)
 
     # def __log_init(self, ip):
-    #     """日志格式化
-    #     """
+    #     """Log formatting"""
     #     logger.remove()
     #     self.logger = copy.deepcopy(logger)
     #     # format_str = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> |<yellow>Robot_ip: " + self.ip + "</yellow>|line:{line}| <level>{level} | {message}</level>"
@@ -37,7 +36,7 @@ class BaseEC:
 
     def _log_init(self, ip):
         def _filter(record):
-            """存在多个stderr的输出,根据log_name进行过滤显示"""
+            """Filter display based on log_name when multiple stderr outputs exist"""
             if record["extra"].get("ip") == ip:
                 return True
             return False
@@ -78,29 +77,30 @@ class BaseEC:
         self.logger.add = _add
 
     # def logger_add(self, *args, **kwargs):
-    #     """你可以像类似loguru一样add sink
-    #     """
+    #     """You can add sinks similar to loguru"""
     #     if "format" not in kwargs: kwargs["format"]=self.__log_format
     #     if "filter" not in kwargs: kwargs["filter"]=self.__log_filter
     #     self.logger.add(*args, **kwargs)
 
     def us_sleep(self, t):
-        """us级延时(理论上可以实现us级)
-        单位: us
+        """Microsecond-level delay (theoretically achievable)
+        Unit: μs
         """
         start, end = 0, 0
         start = time.time()
-        t = (t - 500) / 1000000  # \\500为运行和计算的误差
+        t = (
+            t - 500
+        ) / 1000000  # \\500 accounts for operational and computational error
         while end - start < t:
             end = time.time()
 
     def _set_sock_sendBuf(self, send_buf: int, is_print: bool = False):
-        """设置socket发送缓存区大小
+        """Set socket send buffer size
 
         Args
         ----
-            send_buf (int): 要设置的缓存区的大小
-            is_print (bool, optional): 是否打印数据. Defaults to False.
+            send_buf (int): Buffer size to set
+            is_print (bool, optional): Whether to print data. Defaults to False.
         """
         if is_print:
             before_send_buff = self.sock_cmd.getsockopt(
@@ -120,22 +120,22 @@ class BaseEC:
     def connect_ETController(
         self, ip: str, port: int = 8055, timeout: float = 2
     ) -> tuple:
-        """连接EC系列机器人8055端口
+        """Connect to EC series robot port 8055
 
         Args:
-            ip (str): 机器人ip
-            port (int, optional): SDK端口号. Defaults to 8055.
-            timeout (float, optional): TCP通信的超时时间. Defaults to 2.
+            ip (str): Robot IP
+            port (int, optional): SDK port number. Defaults to 8055.
+            timeout (float, optional): TCP communication timeout. Defaults to 2.
 
         Returns
         -------
-            [tuple]: (True/False,socket/None),返回的socket套接字已在该模块定义为全局变量
+            [tuple]: (True/False, socket/None), returned socket is globally defined in this module
         """
         self.sock_cmd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # -------------------------------------------------------------------------------
-        # 设置nodelay
-        # self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)   # 设置nodelay
+        # Set nodelay
+        # self.sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)   # Set nodelay
         # self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
         # sock.settimeout(timeout)
         # -------------------------------------------------------------------------------
@@ -153,29 +153,29 @@ class BaseEC:
             return (False, None)
 
     def disconnect_ETController(self) -> None:
-        """断开EC机器人的8055端口"""
+        """Disconnect EC robot port 8055"""
         if self.sock_cmd:
             self.sock_cmd.close()
             self.sock_cmd = None
         else:
             self.sock_cmd = None
-            self.logger.critical("socket have already closed")
+            self.logger.critical("socket already closed")
 
     def send_CMD(
         self, cmd: str, params: Optional[dict] = None, id: int = 1, ret_flag: int = 1
     ) -> Any:
-        """向8055发送指定命令
+        """Send specified command to port 8055
 
         Args
         ----
-            cmd (str): 指令
-            params (Dict[str,Any], optional): 参数. Defaults to None.
-            id (int, optional): id号. Defaults to 1.
-            ret_flag (int, optional): 发送数据后是否接收数据,0不接收,1接收. Defaults to 1.
+            cmd (str): Command
+            params (Dict[str,Any], optional): Parameters. Defaults to None.
+            id (int, optional): ID number. Defaults to 1.
+            ret_flag (int, optional): Whether to receive data after sending, 0=no, 1=yes. Defaults to 1.
 
         Returns
         -------
-            Any: 对应指令返回的信息或错误信息
+            Any: Corresponding command return information or error message
         """
         if not params:
             params = {}
@@ -219,103 +219,103 @@ class BaseEC:
             return (False, None, None)
 
     class Frame(Enum):
-        """坐标系(该值用于jog时指定坐标系等)"""
+        """Coordinate system (used for specifying coordinate system during jogging, etc.)"""
 
-        JOINT_FRAME = 0  # 关节坐标系
-        BASE_FRAME = 1  # 笛卡尔坐标系/世界坐标系
-        TOOL_FRAME = 2  # 工具坐标系
-        USER_FRAME = 3  # 用户坐标系
-        CYLINDER_FRAME = 4  # 圆柱坐标系
+        JOINT_FRAME = 0  # Joint coordinate system
+        BASE_FRAME = 1  # Cartesian/World coordinate system
+        TOOL_FRAME = 2  # Tool coordinate system
+        USER_FRAME = 3  # User coordinate system
+        CYLINDER_FRAME = 4  # Cylindrical coordinate system
 
     class ToolNumber(Enum):
-        """工具坐标系(该值用于设置查看工具坐标系数据时设定坐标系等)"""
+        """Tool coordinate system (used for setting/viewing tool coordinate system data)"""
 
-        TOOL0 = 0  # 工具0
-        TOOL1 = 1  # 工具1
-        TOOL2 = 2  # 工具2
-        TOOL3 = 3  # 工具3
-        TOOL4 = 4  # 工具4
-        TOOL5 = 5  # 工具5
-        TOOL6 = 6  # 工具6
-        TOOL7 = 7  # 工具7
+        TOOL0 = 0  # Tool 0
+        TOOL1 = 1  # Tool 1
+        TOOL2 = 2  # Tool 2
+        TOOL3 = 3  # Tool 3
+        TOOL4 = 4  # Tool 4
+        TOOL5 = 5  # Tool 5
+        TOOL6 = 6  # Tool 6
+        TOOL7 = 7  # Tool 7
 
     class UserFrameNumber(Enum):
-        """工具坐标系(该值用于设置查看用户坐标系数据时设定坐标系等)"""
+        """User coordinate system (used for setting/viewing user coordinate system data)"""
 
-        USER0 = 0  # 用户0
-        USER1 = 1  # 用户1
-        USER2 = 2  # 用户2
-        USER3 = 3  # 用户3
-        USER4 = 4  # 用户4
-        USER5 = 5  # 用户5
-        USER6 = 6  # 用户6
-        USER7 = 7  # 用户7
+        USER0 = 0  # User 0
+        USER1 = 1  # User 1
+        USER2 = 2  # User 2
+        USER3 = 3  # User 3
+        USER4 = 4  # User 4
+        USER5 = 5  # User 5
+        USER6 = 6  # User 6
+        USER7 = 7  # User 7
 
     class AngleType(Enum):
-        """位姿单位(该值用于设定传入和返回位姿数据时的单位)"""
+        """Pose unit (used for setting/returning pose data units)"""
 
-        DEG = 0  # 角度
-        RAD = 1  # 弧度
+        DEG = 0  # Degrees
+        RAD = 1  # Radians
 
     class CycleMode(Enum):
-        """循环模式(该值用于查询设置当前的循环模式)"""
+        """Cycle mode (used for querying/setting current cycle mode)"""
 
-        STEP = 0  # 单步
-        CYCLE = 1  # 单循环
-        CONTINUOUS_CYCLE = 2  # 连续循环
+        STEP = 0  # Single step
+        CYCLE = 1  # Single cycle
+        CONTINUOUS_CYCLE = 2  # Continuous cycle
 
     class RobotType(Enum):
-        """机器人子类型"""
+        """Robot subtype"""
 
         EC63 = 3  # EC63
         EC66 = 6  # EC66
         EC612 = 12  # EC612
 
     class ToolBtn(Enum):
-        """末端按钮"""
+        """End-effector button"""
 
-        BLUE_BTN = 0  # 末端蓝色按钮
-        GREEN_BTN = 1  # 末端绿色按钮
+        BLUE_BTN = 0  # End blue button
+        GREEN_BTN = 1  # End green button
 
     class ToolBtnFunc(Enum):
-        """末端按钮功能"""
+        """End-effector button function"""
 
-        DISABLED = 0  # 未启用
-        DRAG = 1  # 拖动
-        RECORD_POINT = 2  # 拖动记点
+        DISABLED = 0  # Disabled
+        DRAG = 1  # Drag
+        RECORD_POINT = 2  # Drag recording point
 
     class JbiRunState(Enum):
-        """jbi运行状态"""
+        """JBI run state"""
 
-        STOP = 0  # jbi运行停止
-        PAUSE = 1  # jbi运行暂停
-        ESTOP = 2  # jbi运行急停
-        RUN = 3  # jbi运行中
-        ERROR = 4  # jbi运行错误
-        DEC_TO_STOP = 5  # jbi减速停止中
-        DEC_TO_PAUSE = 6  # jbi减速暂停中
+        STOP = 0  # JBI run stopped
+        PAUSE = 1  # JBI run paused
+        ESTOP = 2  # JBI emergency stop
+        RUN = 3  # JBI running
+        ERROR = 4  # JBI run error
+        DEC_TO_STOP = 5  # JBI decelerating to stop
+        DEC_TO_PAUSE = 6  # JBI decelerating to pause
 
     class MlPushResult(Enum):
-        """ml点位push结果"""
+        """ML point push result"""
 
-        CORRECT = 0  # 正确
-        WRONG_LENGTH = -1  # 长度错误
-        WRONG_FORMAT = -2  # 格式错误
-        TIMESTAMP_IS_NOT_STANDARD = -3  # 时间戳不标准
+        CORRECT = 0  # Correct
+        WRONG_LENGTH = -1  # Length error
+        WRONG_FORMAT = -2  # Format error
+        TIMESTAMP_IS_NOT_STANDARD = -3  # Timestamp not standard
 
     class RobotMode(Enum):
-        """机器人模式"""
+        """Robot mode"""
 
-        TECH = 0  # 示教模式
-        PLAY = 1  # 运行模式
-        REMOTE = 2  # 远程模式
+        TECH = 0  # Teach mode
+        PLAY = 1  # Run mode
+        REMOTE = 2  # Remote mode
 
     class RobotState(Enum):
-        """机器人状态"""
+        """Robot state"""
 
-        STOP = 0  # 停止状态
-        PAUSE = 1  # 暂停状态
-        ESTOP = 2  # 急停状态
-        PLAY = 3  # 运行状态
-        ERROR = 4  # 错误状态
-        COLLISION = 5  # 碰撞状态
+        STOP = 0  # Stopped
+        PAUSE = 1  # Paused
+        ESTOP = 2  # Emergency stop
+        PLAY = 3  # Running
+        ERROR = 4  # Error
+        COLLISION = 5  # Collision
