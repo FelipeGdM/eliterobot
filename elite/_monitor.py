@@ -6,18 +6,18 @@ Description:
 """
 
 import collections
+import os
+import platform
 import socket
 import struct
-import platform
-import os
-import time
 import threading
+import time
 
 
 class ECMonitorInfo:
-    """EC系列机器人8056数据结构"""
+    """EC series robot 8056 data structure"""
 
-    # 带顺序的字典结构,python3中的字典已经默认有顺序
+    # Ordered dictionary structure, dictionaries in Python 3 are ordered by default
     _ec_struct = collections.OrderedDict()
     _ec_struct["MessageSize"] = "I"
     _ec_struct["TimeStamp"] = "Q"
@@ -72,22 +72,22 @@ class ECMonitorInfo:
 
 
 class ECMonitor:
-    """EC系列机器人8056监控类实现"""
+    """EC series robot 8056 monitoring class implementation"""
 
     __SEND_FREQ = 8  # 8ms
-    _FMT_MSG_SIZE = "I"  # 数据长度信息的默认字节
+    _FMT_MSG_SIZE = "I"  # Default byte for data length information
 
     _PORT = 8056
 
     def __init__(self) -> None:
         # self.robot_ip = ip
         self.monitor_info = ECMonitorInfo()
-        self._monitor_recv_flag = False  # 是否已经开始接受数据
+        self._monitor_recv_flag = False  # Whether data reception has started
         self._monitor_lock = threading.Lock()
 
     def __first_connect(self) -> None:
-        """首次连接,接受并解析出当前版本对应的8056数据包长度"""
-        # 获取当前ECMonitorInfo版本的数据长度信息
+        """Initial connection, receive and parse the 8056 data packet length for the current version"""
+        # Get the data length information for the current ECMonitorInfo version
         self.__current_msg_size_get()
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -98,8 +98,8 @@ class ECMonitor:
             sock.close()
             self.MSG_SIZE = struct.unpack("!" + self._FMT_MSG_SIZE, byte_msg_size)[
                 0
-            ]  # 实际机器人的字节长度
-            # 解析出可以使用的字节长度
+            ]  # Actual robot byte length
+            # Parse the usable byte length
             self.__msg_size_judgment()
         except socket.timeout as e:
             print(f"Connect IP : {self.robot_ip} Port : {self._PORT} timeout")
@@ -107,36 +107,34 @@ class ECMonitor:
             sock.close()
 
     def __current_msg_size_get(self) -> None:
-        """获取当前版本信息的所有数据长度信息"""
+        """Get all data length information for the current version"""
         temp = 0
         for i in ECMonitorInfo._ec_struct.values():
             temp += struct.calcsize(i)
 
-        self.version_msg_size = int(temp)  # ECMonitorInfo对应版本的总长度
+        self.version_msg_size = int(temp)  # Total length for the ECMonitorInfo version
 
     def __msg_size_judgment(self):
-        """判断数据长度"""
+        """Judge data length"""
         if self.version_msg_size > self.MSG_SIZE:
             self.unpack_size = self.MSG_SIZE
         elif self.version_msg_size < self.MSG_SIZE:
-            self.unpack_size = (
-                self.version_msg_size
-            )  # 结合目前版本和实际机器人上发的字节长度,得出可以使用的字节长度
+            self.unpack_size = self.version_msg_size  # Determine usable byte length based on current version and actual robot transmission
 
     def __socket_create(self):
-        """创建socket连接"""
+        """Create socket connection"""
         self.sock_monitor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_monitor.connect((self.robot_ip, self._PORT))
 
     def monitor_run(self):
-        """监控程序运行"""
+        """Monitoring program run"""
         self.monitor_run_state = True
         self.__first_connect()
         self.__socket_create()
-        # ? 测试
-        self._tt = 0  # 数据总接受次数
-        self.__br = 0  # 重连次数
-        # ? 测试
+        # ? Test
+        self._tt = 0  # Total number of data receptions
+        self.__br = 0  # Reconnection count
+        # ? Test
 
         while 1:
             self._monitor_lock.acquire()
@@ -152,21 +150,21 @@ class ECMonitor:
                 if current_unpack_size >= self.unpack_size:
                     break
 
-                # 计算已解析长度，字节分割
+                # Calculate parsed length, byte split
                 fmt_size = struct.calcsize(v)
                 current_unpack_size += fmt_size
                 buff, buffer = buffer[:fmt_size], buffer[fmt_size:]
-                # 解包
+                # Unpack
                 value = struct.unpack("!" + v, buff)
 
-                # 包头异常时，重新建立连接
+                # Re-establish connection if header is abnormal
                 if k == "MessageSize" and value[0] != self.MSG_SIZE:
                     self.sock_monitor.close()
                     self.__socket_create()
                     self._monitor_recv_flag = False
-                    # ? 测试
+                    # ? Test
                     self.__br += 1
-                    # ? 测试
+                    # ? Test
                     break
 
                 if len(v) > 1:
@@ -181,12 +179,12 @@ class ECMonitor:
                 break
 
     def monitor_info_print(self, t: float = 0.5, is_clear_screen: bool = False):
-        """持续显示机器人的当前信息
+        """Continuously display current robot information
 
         Args
         ----
-            t (float,optional): 两次数据刷新的时间间隔(即一次数据展示的时间)
-            is_clear_screen (bool, optional): 是否自动清屏. Defaults to False.
+            t (float,optional): Time interval between two data refreshes (i.e., time for one data display)
+            is_clear_screen (bool, optional): Whether to auto-clear screen. Defaults to False.
         """
 
         def spilt_line():
@@ -206,7 +204,7 @@ class ECMonitor:
             spilt_line()
 
             for k, v in vars(self.monitor_info).items():
-                # 需要再次进行处理的数据
+                # Data requiring additional processing
                 if k == "TimeStamp":
                     v = time.gmtime(v // 1000)
                     v = time.strftime("%Y-%m-%d %H:%M:%S", v)
@@ -218,7 +216,7 @@ class ECMonitor:
                 print(f"| {k}: {v}")
                 spilt_line()
 
-            # 清屏
+            # Clear screen
             time.sleep(t)
             if is_clear_screen:
                 cls_screen()
