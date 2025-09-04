@@ -6,15 +6,15 @@ LastEditTime: 2022-09-07 16:47:46
 Description:
 """
 
-import copy
-from enum import Enum
 import json
 import socket
 import sys
-import time
-from typing import Any, Optional, TextIO
-from loguru._logger import Core, Logger
 import threading
+import time
+from enum import Enum
+from typing import Optional
+
+from loguru._logger import Core, Logger
 
 
 class BaseEC:
@@ -22,24 +22,10 @@ class BaseEC:
 
     send_recv_info_print = False
 
-    # logger.remove(0)
-
-    # def __log_init(self, ip):
-    #     """Log formatting"""
-    #     logger.remove()
-    #     self.logger = copy.deepcopy(logger)
-    #     # format_str = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> |<yellow>Robot_ip: " + self.ip + "</yellow>|line:{line}| <level>{level} | {message}</level>"
-    #     format_str = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> |<yellow>Robot_IP: " + ip + "</yellow>| <level>" + "{level:<8}".ljust(7) +" | {message}</level>"
-    #     self.logger.add(sys.stderr, format = format_str)
-    #     logger.add(sys.stdout)
-    #     pass
-
     def _log_init(self, ip):
         def _filter(record):
             """Filter display based on log_name when multiple stderr outputs exist"""
-            if record["extra"].get("ip") == ip:
-                return True
-            return False
+            return record["extra"].get("ip") == ip
 
         # * ------
         self.logger = Logger(
@@ -76,21 +62,13 @@ class BaseEC:
 
         self.logger.add = _add
 
-    # def logger_add(self, *args, **kwargs):
-    #     """You can add sinks similar to loguru"""
-    #     if "format" not in kwargs: kwargs["format"]=self.__log_format
-    #     if "filter" not in kwargs: kwargs["filter"]=self.__log_filter
-    #     self.logger.add(*args, **kwargs)
-
     def us_sleep(self, t):
         """Microsecond-level delay (theoretically achievable)
         Unit: μs
         """
         start, end = 0, 0
         start = time.time()
-        t = (
-            t - 500
-        ) / 1000000  # \\500 accounts for operational and computational error
+        t = (t - 500) / 1000000  # \\500 accounts for operational and computational error
         while end - start < t:
             end = time.time()
 
@@ -102,24 +80,23 @@ class BaseEC:
             send_buf (int): Buffer size to set
             is_print (bool, optional): Whether to print data. Defaults to False.
         """
+
+        if self.sock_cmd is None:
+            self.logger.error("Socket invalid, connection is broken")
+            return
+
         if is_print:
-            before_send_buff = self.sock_cmd.getsockopt(
-                socket.SOL_SOCKET, socket.SO_SNDBUF
-            )
+            before_send_buff = self.sock_cmd.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)
             self.logger.info(f"before_send_buff: {before_send_buff}")
             self.sock_cmd.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, send_buf)
             time.sleep(1)
-            after_send_buff = self.sock_cmd.getsockopt(
-                socket.SOL_SOCKET, socket.SO_SNDBUF
-            )
+            after_send_buff = self.sock_cmd.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)
             self.logger.info(f"after_send_buff: {after_send_buff}")
             time.sleep(1)
         else:
             self.sock_cmd.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, send_buf)
 
-    def connect_ETController(
-        self, ip: str, port: int = 8055, timeout: float = 2
-    ) -> tuple:
+    def connect_ETController(self, ip: str, port: int = 8055, timeout: float = 2) -> tuple:
         """Connect to EC series robot port 8055
 
         Args:
@@ -146,7 +123,7 @@ class BaseEC:
             self.logger.debug(ip + " connect success")
             self.connect_state = True
             return (True, self.sock_cmd)
-        except Exception as e:
+        except Exception:
             self.sock_cmd.close()
             self.logger.critical(ip + " connect fail")
             quit()
@@ -162,8 +139,8 @@ class BaseEC:
             self.logger.critical("socket already closed")
 
     def send_CMD(
-        self, cmd: str, params: Optional[dict] = None, id: int = 1, ret_flag: int = 1
-    ) -> Any:
+        self, cmd: str, params: Optional[dict] = None, id: int = 1, ret_flag: bool = True
+    ) -> tuple[bool, str | None, str | None]:
         """Send specified command to port 8055
 
         Args
@@ -171,48 +148,52 @@ class BaseEC:
             cmd (str): Command
             params (Dict[str,Any], optional): Parameters. Defaults to None.
             id (int, optional): ID number. Defaults to 1.
-            ret_flag (int, optional): Whether to receive data after sending, 0=no, 1=yes. Defaults to 1.
+            ret_flag (bool, optional): Whether to receive data after sending. Defaults to True.
 
         Returns
         -------
             Any: Corresponding command return information or error message
         """
-        if not params:
-            params = {}
-        else:
-            params = json.dumps(params)
-        sendStr = (
-            '{{"method":"{0}","params":{1},"jsonrpc":"2.0","id":{2}}}'.format(
-                cmd, params, id
-            )
-            + "\n"
-        )
+
+        if self.sock_cmd is None:
+            self.logger.error("Socket invalid, connection is broken")
+            return (False, None, None)
+
+        parsed_params = params if params else {}
+        sendStr = json.dumps({"jsonrpc": "2.0", "method": cmd, "params": parsed_params, "id": id})
+
         if self.send_recv_info_print:  # print send msg
             self.logger.info(f"Send: Func is {cmd}")
             self.logger.info(sendStr)
+
         try:
             with BaseEC._communicate_lock:
                 self.sock_cmd.sendall(bytes(sendStr, "utf-8"))
-                if ret_flag == 1:
-                    ret = self.sock_cmd.recv(1024)
-                    jdata = json.loads(str(ret, "utf-8"))
 
-                    if self.send_recv_info_print:  # print recv nsg
-                        self.logger.info(f"Recv: Func is {cmd}")
-                        self.logger.info(str(ret, "utf-8"))
+                if not ret_flag:
+                    return (True, None, None)
 
-                    if "result" in jdata.keys():
-                        if jdata["id"] != id:
-                            self.logger.warning(
-                                "id match fail,send_id={0},recv_id={0}", id, jdata["id"]
-                            )
-                        return json.loads(jdata["result"])
+                ret = self.sock_cmd.recv(1024)
+                jdata = json.loads(str(ret, "utf-8"))
 
-                    elif "error" in jdata.keys():
-                        self.logger.warning(f"CMD: {cmd} | {jdata['error']['message']}")
-                        return (False, jdata["error"]["message"], jdata["id"])
-                    else:
-                        return (False, None, None)
+                if self.send_recv_info_print:  # print recv nsg
+                    self.logger.info(f"Recv: Func is {cmd}")
+                    self.logger.info(str(ret, "utf-8"))
+
+                if "result" in jdata:
+                    if jdata["id"] != id:
+                        self.logger.warning(
+                            "id match fail,send_id={0},recv_id={0}", id, jdata["id"]
+                        )
+                    return (True, json.loads(jdata["result"]), jdata["id"])
+
+                if "error" in jdata:
+                    self.logger.warning(f"CMD: {cmd} | {jdata['error']['message']}")
+                    return (False, jdata["error"]["message"], jdata["id"])
+
+                self.logger.error("Received package didn't match any known structure")
+                return (False, None, None)
+
         except Exception as e:
             self.logger.error(f"CMD: {cmd} |Exception: {e}")
             quit()
