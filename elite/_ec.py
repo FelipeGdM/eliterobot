@@ -87,7 +87,14 @@ class _EC(
 
     # Custom method implementation
     def robot_servo_on(self, max_retries: int = 3) -> bool:
-        """Automatically servo on, successful in the vast majority of cases"""
+        """Simple setup to start robot operation. Clears alarms, syncs encoders then enable servos
+
+        Args:
+            max_retries (int, optional): How may retries should be done for each step. Defaults to 3.
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
         # Handle pass-through state
         if self.TT_state:
             self.logger.debug("TT state is enabled, automatically clearing TT cache")
