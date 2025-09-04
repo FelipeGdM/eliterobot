@@ -86,7 +86,7 @@ class _EC(
         self.logger.info("The robot has stopped")
 
     # Custom method implementation
-    def robot_servo_on(self, max_retries: int = 3) -> bool:
+    def robot_servo_on(self, max_retries: int = 5) -> bool:
         """Simple setup to start robot operation. Clears alarms, syncs encoders then enable servos
 
         Args:
