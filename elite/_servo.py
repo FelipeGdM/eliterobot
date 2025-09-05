@@ -31,14 +31,14 @@ class ECServo(BaseEC):
         >>> ec = EC(ip="192.168.1.200", auto_connect=True)
         >>> print(ec.mode)  # => RobotMode.TECH
         """
-        return self.RobotMode(self.send_CMD("getRobotMode"))
+        return self.RobotMode(self.send_CMD("getRobotMode").result)
 
     @property
     def state(self) -> BaseEC.RobotState:
         """Get the robot's running state
             #!The emergency stop state obtained by this command will only exist briefly and
-            # will soon be overwritten by alarms. If you need to get the emergency stop status,
-            # please use robot_get_estop_status()
+            #! will soon be overwritten by alarms. If you need to get the emergency stop status,
+            #! please use robot_get_estop_status()
 
         Returns
         -------
@@ -50,7 +50,7 @@ class ECServo(BaseEC):
         >>> ec = EC(ip="192.168.1.200", auto_connect=True)
         >>> print(ec.state)  # => RobotState.STOP
         """
-        return self.RobotState(self.send_CMD("getRobotState"))
+        return self.RobotState(self.send_CMD("getRobotState").result)
 
     @property
     def estop_status(self) -> CmdResponse:
