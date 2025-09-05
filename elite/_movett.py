@@ -7,9 +7,9 @@ Description:
 """
 
 import time
+from typing import List, Optional
 
 from ._baseec import BaseEC
-from typing import List, Optional
 
 
 class ECMoveTT(BaseEC):
@@ -127,4 +127,4 @@ class ECMoveTT(BaseEC):
         -------
             int: 0: 非透传状态 1: 透传状态
         """
-        return self.send_CMD("get_transparent_transmission_state")
+        return self.send_CMD("get_transparent_transmission_state").result

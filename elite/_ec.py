@@ -57,13 +57,9 @@ class _EC(
 
     def __repr__(self) -> str:
         if self.connect_state:
-            return "Elite EC6%s, IP:%s, Name:%s" % (
-                self.robot_type.value,
-                self.robot_ip,
-                self.robot_name,
-            )
+            return f"Elite EC6{self.robot_type.value}, IP: {self.robot_ip}, Name: {self.robot_name}"
         else:
-            return "Elite EC__, IP:%s, Name:%s" % (self.robot_ip, self.robot_name)
+            return f"Elite EC6__, IP: {self.robot_ip}, Name: {self.robot_name}"
 
     def wait_stop(self) -> None:
         """Wait for the robot motion to stop"""
