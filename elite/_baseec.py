@@ -163,6 +163,7 @@ class BaseEC:
 
         parsed_params = params if params else {}
         sendStr = json.dumps({"jsonrpc": "2.0", "method": cmd, "params": parsed_params, "id": id})
+        sendStr += "\n"
 
         if self.send_recv_info_print:  # print send msg
             self.logger.info(f"Send: Func is {cmd}")
@@ -197,7 +198,7 @@ class BaseEC:
                 return CmdResponse(False, "", "")
 
         except Exception as e:
-            self.logger.error(f"CMD: {cmd} |Exception: {e}")
+            self.logger.error(f"CMD: {cmd} | Exception: {e}")
             quit()
             return (False, None, None)
 
