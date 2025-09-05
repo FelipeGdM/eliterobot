@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "elirobots_pmr_sdk"
 version = "0.250805.1"
-description = "a SDK library for Elite EC Series Robot"
+description = "PMR Poli USP fork of the SDK library for the Elite EC Series Robot"
 readme = "README.md"
 requires-python = ">3.7"
 keywords = ["elite", "elibot", "eliterobot", "robot", "Robot", "robotSDK"]
