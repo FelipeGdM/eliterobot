@@ -9,7 +9,7 @@ Description: Motion and task execution related
 import time
 from typing import Optional
 
-from elite.types import CmdResponse
+from elirobots_pmr_sdk.types import CmdResponse
 
 from ._baseec import BaseEC
 

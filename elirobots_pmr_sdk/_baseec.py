@@ -16,7 +16,7 @@ from typing import Optional
 
 from loguru._logger import Core, Logger
 
-from elite.types import CmdResponse
+from elirobots_pmr_sdk.types import CmdResponse
 
 
 class BaseEC:

@@ -9,8 +9,8 @@ Description: Servo-related class
 import time
 from enum import Enum
 
-from elite._baseec import BaseEC
-from elite.types import CmdResponse
+from elirobots_pmr_sdk._baseec import BaseEC
+from elirobots_pmr_sdk.types import CmdResponse
 
 
 class ECServo(BaseEC):

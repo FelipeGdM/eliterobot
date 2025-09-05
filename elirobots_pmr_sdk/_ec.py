@@ -2,17 +2,17 @@ import threading
 import time
 from typing import Optional
 
-from elite._baseec import BaseEC
-from elite._info import ECInfo as __ECInfo
-from elite._kinematics import ECKinematics as __ECKinematics
-from elite._monitor import ECMonitor as __ECMonitor
-from elite._move import ECMove as __ECMove
-from elite._moveml import ECMoveML as __ECMoveML
-from elite._movett import ECMoveTT as __ECMoveTT
-from elite._profinet import ECProfinet as __ECProfinet
-from elite._servo import ECServo as __ECServo
-from elite._var import ECIO as __ECIO
-from elite._var import ECVar as __ECVar
+from elirobots_pmr_sdk._baseec import BaseEC
+from elirobots_pmr_sdk._info import ECInfo as __ECInfo
+from elirobots_pmr_sdk._kinematics import ECKinematics as __ECKinematics
+from elirobots_pmr_sdk._monitor import ECMonitor as __ECMonitor
+from elirobots_pmr_sdk._move import ECMove as __ECMove
+from elirobots_pmr_sdk._moveml import ECMoveML as __ECMoveML
+from elirobots_pmr_sdk._movett import ECMoveTT as __ECMoveTT
+from elirobots_pmr_sdk._profinet import ECProfinet as __ECProfinet
+from elirobots_pmr_sdk._servo import ECServo as __ECServo
+from elirobots_pmr_sdk._var import ECIO as __ECIO
+from elirobots_pmr_sdk._var import ECVar as __ECVar
 
 __recommended_min_robot_version = "3.0.0"
 # All interfaces were tested in v3.0.0. Most interfaces can also run in versions lower than this, but they have not been tested
