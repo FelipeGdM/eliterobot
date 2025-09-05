@@ -1,5 +1,12 @@
 # Changelog
 
+## 2025-09-05
+
+- Renamed fork to elite_pmr_sdk
+- Translated comments to english
+- Created CmdResponse interface for send_CMD return type
+- Configured ruff and mypy
+
 ## 2022-07-30
 
 - `movj` and `movl` interfaces now block execution by default.
