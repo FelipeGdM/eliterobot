@@ -37,6 +37,7 @@ class _EC(
         ip: str = "192.168.1.200",
         name: Optional[str] = "None",
         auto_connect: bool = False,
+        enable_log: bool = True,
     ) -> None:
         """Initialize EC robot
 
@@ -45,12 +46,13 @@ class _EC(
             ip (str, optional): Robot IP. Defaults to "192.168.1.200".
             name (Optional[str], optional): Robot name, visible when printing the instance. Defaults to "None".
             auto_connect (bool, optional): Whether to automatically connect to the robot. Defaults to False.
+            enable_log (bool, optional): Whether to log events in stdout. Defaults to True.
         """
         super().__init__()
         self.robot_ip = ip
         self.robot_name = name
         self.connect_state = False
-        self._log_init(self.robot_ip)
+        self._log_init(self.robot_ip, enable_log)
 
         if auto_connect:
             self.connect_ETController(self.robot_ip)

@@ -24,7 +24,7 @@ class BaseEC:
 
     send_recv_info_print = False
 
-    def _log_init(self, ip):
+    def _log_init(self, ip, enable_log):
         def _filter(record):
             """Filter display based on log_name when multiple stderr outputs exist"""
             return record["extra"].get("ip") == ip
@@ -51,7 +51,9 @@ class BaseEC:
             + "{level:<8}".ljust(7)
             + " | {message}</level>"
         )
-        self.logger.add(sys.stderr, format=format_str, filter=_filter, colorize=True)
+
+        if enable_log:
+            self.logger.add(sys.stderr, format=format_str, filter=_filter, colorize=True)
 
         _logger_add = self.logger.add
 
@@ -141,7 +143,11 @@ class BaseEC:
             self.logger.critical("socket already closed")
 
     def send_CMD(
-        self, cmd: str, params: Optional[dict] = None, id: int = 1, ret_flag: bool = True
+        self,
+        cmd: str,
+        params: Optional[dict] = None,
+        id: int = 1,
+        ret_flag: bool = True,
     ) -> CmdResponse:
         """Send specified command to port 8055
 
