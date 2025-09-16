@@ -11,4 +11,4 @@ __all__ = ["EC"]
 __version__ = "0.0.1"
 
 
-from elirobots_pmr_sdk._ec import _EC as EC
+from pmr_elirobots_sdk._ec import _EC as EC

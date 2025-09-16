@@ -1,10 +1,6 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "elirobots_pmr_sdk"
-version = "0.250805.1"
+name = "pmr_elirobots_sdk"
+version = "0.2508.2"
 description = "PMR Poli USP fork of the SDK library for the Elite EC Series Robot"
 readme = "README.md"
 requires-python = ">3.7"
@@ -20,11 +16,12 @@ dependencies = [
 license = "Apache-2.0"
 license-files = ["LICEN[CS]E*"]
 
-[tool.setuptools]
-packages = {find = {}}
-# Optional: If you need to include specific packages or exclude others, you can use:
-# packages = {find = {where = ".", include = ["elite*"], exclude = ["elite.EliteJson_3_0_2", "elite.ElitePoseCali", "elite.pose"]}}
+[tool.poetry]
+packages = [{include = "pmr_elirobots_sdk", from = "."}]
 
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 
