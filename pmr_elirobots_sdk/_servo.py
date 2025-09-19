@@ -50,7 +50,10 @@ class ECServo(BaseEC):
         >>> ec = EC(ip="192.168.1.200", auto_connect=True)
         >>> print(ec.state)  # => RobotState.STOP
         """
-        return self.RobotState(self.send_CMD("getRobotState").result)
+        try:
+            return self.RobotState(self.send_CMD("getRobotState").result)
+        except ValueError:
+            return self.RobotState.ERROR
 
     @property
     def estop_status(self) -> CmdResponse:
