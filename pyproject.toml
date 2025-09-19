@@ -1,6 +1,6 @@
 [project]
 name = "pmr_elirobots_sdk"
-version = "0.2508.2"
+version = "0.0.1"
 description = "PMR Poli USP fork of the SDK library for the Elite EC Series Robot"
 readme = "README.md"
 requires-python = ">3.7"
