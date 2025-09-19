@@ -14,7 +14,8 @@ import time
 from enum import IntEnum
 from typing import Optional
 
-from loguru._logger import Core, Logger
+# from loguru._logger import Core, Logger
+from loguru import logger
 
 from pmr_elirobots_sdk.types import CmdResponse
 
@@ -30,41 +31,38 @@ class BaseEC:
             return record["extra"].get("ip") == ip
 
         # * ------
-        self.logger = Logger(
-            core=Core(),
-            exception=None,
-            depth=0,
-            record=False,
-            lazy=False,
-            colors=False,
-            raw=False,
-            capture=True,
-            patcher=None,
-            extra={"ip": ip},
-        )
+        self.logger = logger
+        # Logger(
+        #     core=Core(),
+        #     exception=None,
+        #     depth=0,
+        #     record=False,
+        #     lazy=False,
+        #     colors=False,
+        #     raw=False,
+        #     capture=True,
+        #     patcher=None,
+        #     extra={"ip": ip},
+        # )
 
         # * ------
         format_str = (
-            "<green>{time:YYYY-MM-DD HH:mm:ss}</green> |<yellow>Robot_IP: "
+            "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <yellow>Robot_IP: "
             + ip
-            + "</yellow>| <level>"
+            + "</yellow> | <level>"
             + "{level:<8}".ljust(7)
             + " | {message}</level>"
         )
+        config = {
+            "handlers": [
+                {"sink": sys.stdout, "format": format_str},
+            ],
+            "extra": {"ip": ip},
+        }
+        self.logger.configure(**config)
 
-        if enable_log:
-            self.logger.add(sys.stderr, format=format_str, filter=_filter, colorize=True)
-
-        _logger_add = self.logger.add
-
-        def _add(*args, **kwargs):
-            if "format" not in kwargs:
-                kwargs["format"] = format_str
-            if "filter" not in kwargs:
-                kwargs["filter"] = _filter
-            _logger_add(*args, **kwargs)
-
-        self.logger.add = _add
+        if not enable_log:
+            self.logger.disable(__name__)
 
     def us_sleep(self, t):
         """Microsecond-level delay (theoretically achievable)
@@ -72,7 +70,9 @@ class BaseEC:
         """
         start, end = 0, 0
         start = time.time()
-        t = (t - 500) / 1000000  # \\500 accounts for operational and computational error
+        t = (
+            t - 500
+        ) / 1000000  # \\500 accounts for operational and computational error
         while end - start < t:
             end = time.time()
 
@@ -90,17 +90,23 @@ class BaseEC:
             return
 
         if is_print:
-            before_send_buff = self.sock_cmd.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)
+            before_send_buff = self.sock_cmd.getsockopt(
+                socket.SOL_SOCKET, socket.SO_SNDBUF
+            )
             self.logger.info(f"before_send_buff: {before_send_buff}")
             self.sock_cmd.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, send_buf)
             time.sleep(1)
-            after_send_buff = self.sock_cmd.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)
+            after_send_buff = self.sock_cmd.getsockopt(
+                socket.SOL_SOCKET, socket.SO_SNDBUF
+            )
             self.logger.info(f"after_send_buff: {after_send_buff}")
             time.sleep(1)
         else:
             self.sock_cmd.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, send_buf)
 
-    def connect_ETController(self, ip: str, port: int = 8055, timeout: float = 2) -> tuple:
+    def connect_ETController(
+        self, ip: str, port: int = 8055, timeout: float = 2
+    ) -> tuple:
         """Connect to EC series robot port 8055
 
         Args:
@@ -163,12 +169,14 @@ class BaseEC:
             Any: Corresponding command return information or error message
         """
 
-        if self.sock_cmd is None:
+        if not self.alive:
             self.logger.error("Socket invalid, connection is broken")
             return CmdResponse(False, "", "")
 
         parsed_params = params if params else {}
-        sendStr = json.dumps({"jsonrpc": "2.0", "method": cmd, "params": parsed_params, "id": id})
+        sendStr = json.dumps(
+            {"jsonrpc": "2.0", "method": cmd, "params": parsed_params, "id": id}
+        )
         sendStr += "\n"
 
         if self.send_recv_info_print:  # print send msg
@@ -207,6 +215,10 @@ class BaseEC:
             self.logger.error(f"CMD: {cmd} | Exception: {e}")
             quit()
             return (False, None, None)
+
+    @property
+    def alive(self):
+        return hasattr(self, "sock_cmd") and self.sock_cmd is not None
 
     class Frame(IntEnum):
         """Coordinate system (used for specifying coordinate system during jogging, etc.)"""

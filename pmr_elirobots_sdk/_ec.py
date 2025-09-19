@@ -52,7 +52,8 @@ class _EC(
         self.robot_ip = ip
         self.robot_name = name
         self.connect_state = False
-        self._log_init(self.robot_ip, enable_log)
+        self.enable_log = enable_log
+        self._log_init(self.robot_ip, self.enable_log)
 
         if auto_connect:
             self.connect_ETController(self.robot_ip)
@@ -93,6 +94,10 @@ class _EC(
         Returns:
             bool: True if successful, False otherwise
         """
+
+        if not self.alive:
+            return False
+
         # Handle pass-through state
         if self.TT_state:
             self.logger.debug("TT state is enabled, automatically clearing TT cache")
